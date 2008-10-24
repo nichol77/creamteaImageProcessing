@@ -26,6 +26,7 @@
 
 #include <TFile.h>
 #include <TH3.h>
+#include <TH2.h>
 #include <TTree.h>
 #include <TROOT.h>
 #include <stdlib.h>
