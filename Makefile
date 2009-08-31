@@ -1,55 +1,64 @@
-# Makefile 
-# will make PROGRAM using PROGRAM_CLASSES and R_CLASSES
-# 
-# R_DICT and R_LIBRARY are created by root 
-#
-# - no options will create program then run it
-# - clean is as usual
-# - profile (in theory) will profile the run program - it makes a special version called a.out
-# - test will time and run the program 10 times
-# - no run will disable the run feature
+#############################################################################
+## Makefile -- New Version of my Makefile that works on both linux
+##              and mac os x
+## Ryan Nichol <rjn@hep.ucl.ac.uk>
+##############################################################################
+include Makefile.arch
 
-# These bits to change - file name macros
+#Site Specific  Flags
+SYSINCLUDES	= 
+SYSLIBS         = 
 
-PROGRAM    = 3DgradScan
-PROGRAM2   = edgeDetection
+SIMPLE_GEANT_SIM_DIR=/home/rjn/creamtea/simpleGeantSim
 
-# Compiler macros
 
-GCC       = g++
-CPPFLAGS  = -O2 -g -Wall -fPIC $(INCLUDES)  
-INCLUDES  = -I$(ROOTSYS)/include 
-RLIBS     = -L$(ROOTSYS)/lib/ $(shell $(ROOTSYS)/bin/root-config --libs) -lMinuit -lTreePlayer
-LIBRARIES = -lz -lm $(RLIBS)
+#Generic and Site Specific Flags
+CXXFLAGS     += $(ROOTCFLAGS) $(SYSINCLUDES) -I $(SIMPLE_GEANT_SIM_DIR)/include
+LDFLAGS      += -g $(ROOTLDFLAGS) 
 
-.PHONY:all
+LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS) 
+GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
-all: $(PROGRAM)
 
-$(PROGRAM) : $(PROGRAM).o
-	@echo "****<LINKING : $@>**** "
-	$(GCC) $(CPPFLAGS) $(LIBRARIES) $^ -o  $@
+all : 3DgradScan imageQuality
 
-$(PROGRAM2) : $(PROGRAM2).o
-	@echo "****<LINKING : $@>**** "
-	$(GCC) $(CPPFLAGS) $(LIBRARIES) $^ -o  $@
 
-testHistos: testHistos.o
-	@echo "****<LINKING : $@>**** "
-	$(GCC) $(CPPFLAGS) $(LIBRARIES) $^ -o  $@
 
-%.o:%.cpp
-	@echo "****<COMPILING : $@>****"
-	$(GCC) $(CPPFLAGS) -c $^ -o $@
+% : %.$(SRCSUF) 
+	@echo "Linking $@ ..."
+	$(LD)  $(CXXFLAGS) $(LDFLAGS) $< $(LIBS) $(OutPutOpt) $@
+	@echo "$@ done"
 
-.PHONY:clean
+%.$(OBJSUF) : %.$(SRCSUF)
+	@echo "<**Compiling**> "$<
+	$(CXX) $(CXXFLAGS) -c $< -o  $@
+
+%.$(OBJSUF) : %.C
+	@echo "<**Compiling**> "$<
+	$(CXX) $(CXXFLAGS) $ -c $< -o  $@
+
+
+magicDict.C: $(CLASS_HEADERS)
+	@echo "Generating dictionary ..."
+	@ rm -f *Dict* 
+	rootcint $@ -c $(INC_ANITA_UTIL) $(CLASS_HEADERS) LinkDef.h
+
+install: $(ROOT_LIBRARY)
+ifeq ($(PLATFORM),macosx)
+	cp $(ROOT_LIBRARY) $(subst .$(DLLSUF),.so,$(ROOT_LIBRARY)) $(ANITA_UTIL_LIB_DIR)
+else
+	cp $(ROOT_LIBRARY) $(ANITA_UTIL_LIB_DIR)
+endif
+	cp  $(CLASS_HEADERS) $(ANITA_UTIL_INC_DIR)
 
 clean:
-	rm *.o 
+	@rm -f *Dict*
+	@rm -f *.${OBJSUF}
+	@rm -f $(LIBRARY)
+	@rm -f $(ROOT_LIBRARY)
+	@rm -f $(subst .$(DLLSUF),.so,$(ROOT_LIBRARY))	
+	@rm -f $(TEST)
+#############################################################################
 
-.PHONY:root
-
-root:$(PROGRAM)
-	root -l analysed.root 
 
 

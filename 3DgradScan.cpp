@@ -23,6 +23,7 @@
 
 #include <TFile.h>
 #include <TH3.h>
+#include <TH2.h>
 #include <TTree.h>
 #include <TROOT.h>
 #include <stdlib.h>
@@ -30,13 +31,13 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-#include "../global_vars.hh"
+#include "DetectorDefs.hh"
 
 // ******************** Variables ********************
 
-char sourceF = "Source3DGS.dat"; // .dat file used to import test histo , extent and modifier values into loader
+char *sourceF = "Source3DGS.dat"; // .dat file used to import test histo , extent and modifier values into loader
 
-char outF    = "analysed.root";  // .root file name to save out put to
+char *outF    = "analysed.root";  // .root file name to save out put to
 
 float length = SIDELENGTH*1000;  // length in mm of the side of the middle detector (layer 1) SIDELENGTH defined in global_var.hh
 
@@ -93,9 +94,9 @@ int main ()
 
   //******************
 
-  bkgndSubtraction ("PCAh","bkgnd","PCAh",extent, modifier1, in, out, background);
+  bkgndSubtraction ("histContainer","bkgnd","histNoContainer",extent, modifier1, in, out, background);
 
-  absorbedSubtraction ("Absorbed","Absorbed","absorbed" ,9,100 ,extent2,modifier2 ,background, in, out,500);
+  //  absorbedSubtraction ("Absorbed","Absorbed","absorbed" ,9,100 ,extent2,modifier2 ,background, in, out,500);
 
   out->Write();
 
@@ -220,10 +221,10 @@ void absorbedSubtraction (char* bkgndTreeName, char* absTreeName, char* outHistN
   TTree* abs = (TTree*) inFile->Get(absTreeName);
   
   abs->SetBranchAddress("xCut",&xCut);
-  abs->SetBranchAddress("zCut",&zCut);
+  abs->SetBranchAddress("yCut",&zCut);
 
   abs->SetBranchAddress("xGrad",&xGrad);
-  abs->SetBranchAddress("zGrad",&zGrad);
+  abs->SetBranchAddress("yGrad",&zGrad);
 
   int nEntriesS = abs->GetEntries();
 
@@ -233,10 +234,10 @@ void absorbedSubtraction (char* bkgndTreeName, char* absTreeName, char* outHistN
   TTree* absB = (TTree*) backgroundFile->Get(bkgndTreeName);
   
   absB->SetBranchAddress("xCut",&xCutB);
-  absB->SetBranchAddress("zCut",&zCutB);
+  absB->SetBranchAddress("yCut",&zCutB);
 
   absB->SetBranchAddress("xGrad",&xGradB);
-  absB->SetBranchAddress("zGrad",&zGradB);
+  absB->SetBranchAddress("yGrad",&zGradB);
 
   int nEntriesB = absB->GetEntries();
 
