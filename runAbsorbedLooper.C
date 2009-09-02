@@ -18,7 +18,7 @@ void runAbsorbedLooper()
     //    sprintf(inputName,"/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetat_1_3_1/pca/pca_fakecontainer_10cmtarget_%d_%d.root",i+1,i+1000);
 
   //  }
-//Download from UCL
+//Downloaded from UCL
 for(int tag=1;tag<=10;tag++) {
   //  sprintf(inputName,"http://www.hep.ucl.ac.uk/~rjn/creamtea/pcaFiles/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_%d.root",tag);
   sprintf(inputName,"/home/rjn/creamtea/data/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_%d.root",tag);
@@ -27,7 +27,7 @@ for(int tag=1;tag<=10;tag++) {
  
  AbsorbedLooper theLooper(Absorbed);
  // theLooper.MakeSliceHists(480);
- theLooper.MakeSliceHistsIteratively(125);
+ theLooper.MakeSliceHistsIteratively(25);
  
   
 
