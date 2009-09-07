@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Fri Jul 10 09:14:14 2009 by ROOT version 5.20/00
+// Thu Sep  3 07:14:30 2009 by ROOT version 5.20/00
 // from TTree pcaTree/pcaTree
-// found on file: /unix/anita1/creamtea/strips_650/container/pca/pca_container_1_1000.root
+// found on file: /unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root
 //////////////////////////////////////////////////////////
 
 #ifndef PcaTreeLooper_h
@@ -27,6 +27,7 @@ public :
    Double_t        thetayzTrue;
    Double_t        xzGradTrue[2];
    Double_t        yzGradTrue[2];
+   Double_t        xyzFitQualTrue[2];
    Int_t           gotRecoPCA;
    Double_t        xPosReco;
    Double_t        yPosReco;
@@ -46,6 +47,7 @@ public :
    TBranch        *b_thetayzTrue;   //!
    TBranch        *b_xzGradTrue;   //!
    TBranch        *b_yzGradTrue;   //!
+   TBranch        *b_xyzFitQualTrue;   //!
    TBranch        *b_gotRecoPCA;   //!
    TBranch        *b_xPosReco;   //!
    TBranch        *b_yPosReco;   //!
@@ -76,9 +78,9 @@ PcaTreeLooper::PcaTreeLooper(TTree *tree)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/strips_650/container/pca/pca_container_1_1000.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
       if (!f) {
-         f = new TFile("/unix/anita1/creamtea/strips_650/container/pca/pca_container_1_1000.root");
+         f = new TFile("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
       }
       tree = (TTree*)gDirectory->Get("pcaTree");
 
@@ -137,6 +139,7 @@ void PcaTreeLooper::Init(TTree *tree)
    fChain->SetBranchAddress("thetayzTrue", &thetayzTrue, &b_thetayzTrue);
    fChain->SetBranchAddress("xzGradTrue", xzGradTrue, &b_xzGradTrue);
    fChain->SetBranchAddress("yzGradTrue", yzGradTrue, &b_yzGradTrue);
+   fChain->SetBranchAddress("xyzFitQualTrue", xyzFitQualTrue, &b_xyzFitQualTrue);
    fChain->SetBranchAddress("gotRecoPCA", &gotRecoPCA, &b_gotRecoPCA);
    fChain->SetBranchAddress("xPosReco", &xPosReco, &b_xPosReco);
    fChain->SetBranchAddress("yPosReco", &yPosReco, &b_yPosReco);
@@ -167,7 +170,7 @@ void PcaTreeLooper::Show(Long64_t entry)
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t PcaTreeLooper::Cut(Long64_t entry)
+Int_t PcaTreeLooper::Cut(Long64_t /*entry*/)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.

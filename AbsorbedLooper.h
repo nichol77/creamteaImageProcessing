@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Aug 31 11:02:09 2009 by ROOT version 5.20/00
+// Mon Sep  7 11:26:17 2009 by ROOT version 5.20/00
 // from TTree Absorbed/Absorbed
-// found on file: ../data/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_1.root
+// found on file: /unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_1.root
 //////////////////////////////////////////////////////////
 
 #ifndef AbsorbedLooper_h
@@ -23,22 +23,34 @@ public :
    Double_t        yGrad;
    Double_t        yCut;
    Double_t        xyzFitQual;
+   Double_t        xGradReco;
+   Double_t        xCutReco;
+   Double_t        yGradReco;
+   Double_t        yCutReco;
+   Double_t        xyzFitQualReco;
 
    // List of branches
-   TBranch        *b_gradX;   //!
-   TBranch        *b_cutX;   //!
-   TBranch        *b_gradY;   //!
-   TBranch        *b_cutY;   //!
+   TBranch        *b_xGrad;   //!
+   TBranch        *b_xCut;   //!
+   TBranch        *b_yGrad;   //!
+   TBranch        *b_yCut;   //!
    TBranch        *b_xyzFitQual;   //!
+   TBranch        *b_xGradReco;   //!
+   TBranch        *b_xCutReco;   //!
+   TBranch        *b_yGradReco;   //!
+   TBranch        *b_yCutReco;   //!
+   TBranch        *b_xyzFitQualReco;   //!
 
    AbsorbedLooper(TTree *tree=0);
    virtual ~AbsorbedLooper();
    virtual Int_t    Cut(Long64_t entry);
+   virtual Int_t    CutReco(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     MakeSliceHists(int numBins=20);
    virtual void     MakeSliceHistsIteratively(int binWidth=1000);
+   virtual void     MakeSliceHistsIterativelyReco(int binWidth);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -51,9 +63,9 @@ AbsorbedLooper::AbsorbedLooper(TTree *tree)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../data/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_1.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_1.root");
       if (!f) {
-         f = new TFile("../data/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_1.root");
+         f = new TFile("/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_1.root");
       }
       tree = (TTree*)gDirectory->Get("Absorbed");
 
@@ -104,11 +116,16 @@ void AbsorbedLooper::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("xGrad", &xGrad, &b_gradX);
-   fChain->SetBranchAddress("xCut", &xCut, &b_cutX);
-   fChain->SetBranchAddress("yGrad", &yGrad, &b_gradY);
-   fChain->SetBranchAddress("yCut", &yCut, &b_cutY);
+   fChain->SetBranchAddress("xGrad", &xGrad, &b_xGrad);
+   fChain->SetBranchAddress("xCut", &xCut, &b_xCut);
+   fChain->SetBranchAddress("yGrad", &yGrad, &b_yGrad);
+   fChain->SetBranchAddress("yCut", &yCut, &b_yCut);
    fChain->SetBranchAddress("xyzFitQual", &xyzFitQual, &b_xyzFitQual);
+   fChain->SetBranchAddress("xGradReco", &xGradReco, &b_xGradReco);
+   fChain->SetBranchAddress("xCutReco", &xCutReco, &b_xCutReco);
+   fChain->SetBranchAddress("yGradReco", &yGradReco, &b_yGradReco);
+   fChain->SetBranchAddress("yCutReco", &yCutReco, &b_yCutReco);
+   fChain->SetBranchAddress("xyzFitQualReco", &xyzFitQualReco, &b_xyzFitQualReco);
    Notify();
 }
 
@@ -140,6 +157,19 @@ Int_t AbsorbedLooper::Cut(Long64_t /*entry*/)
   if(TMath::Abs((xGrad*detLevel)+xCut)>cutAt) return -1;
   if(TMath::Abs((yGrad*detLevel)+yCut)>cutAt) return -1;
   if(xyzFitQual>1) return -1;
+  return 1;
+}
+
+Int_t AbsorbedLooper::CutReco(Long64_t /*entry*/)
+{
+// This function may be called from Loop.
+// returns  1 if entry is accepted.
+// returns -1 otherwise.
+  Int_t detLevel=-7000;
+  Int_t cutAt=5000;
+  if(TMath::Abs((xGradReco*detLevel)+xCutReco)>cutAt) return -1;
+  if(TMath::Abs((yGradReco*detLevel)+yCutReco)>cutAt) return -1;
+  if(xyzFitQual>1e6) return -1; //This cut needs to be examined
   return 1;
 }
 #endif // #ifdef AbsorbedLooper_cxx

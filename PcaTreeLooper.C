@@ -51,7 +51,7 @@ void PcaTreeLooper::FillPosHist(TH3F *histPos, Double_t thetaCut)
    Long64_t nentries = fChain->GetEntries();
    
    Int_t numStars=100;
-   Long64_t starEvery=nentries/100;
+   Long64_t starEvery=nentries/numStars;
    if(starEvery==0) starEvery++;
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
@@ -61,6 +61,7 @@ void PcaTreeLooper::FillPosHist(TH3F *histPos, Double_t thetaCut)
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
       if(thetaTrue<thetaCut) continue;
+      if(xyzFitQualTrue[0]>1 || xyzFitQualTrue[1]>1) continue;
 
       histPos->Fill(xPosTrue,yPosTrue,zPosTrue);      
    }
