@@ -169,7 +169,7 @@ Int_t AbsorbedLooper::CutReco(Long64_t /*entry*/)
   Int_t cutAt=5000;
   if(TMath::Abs((xGradReco*detLevel)+xCutReco)>cutAt) return -1;
   if(TMath::Abs((yGradReco*detLevel)+yCutReco)>cutAt) return -1;
-  if(xyzFitQual>1e6) return -1; //This cut needs to be examined
+  if(xyzFitQual>1e3) return -1; //This cut needs to be examined
   return 1;
 }
 #endif // #ifdef AbsorbedLooper_cxx

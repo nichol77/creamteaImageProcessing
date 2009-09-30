@@ -3,19 +3,21 @@
 
 void doBackgroundSubtraction()
 {
-  char *backgroundBase="/unix/anita1/creamtea/strips_650/fakecontainer/pca/pca_fakecontainer";
-  char *targetBase="/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5/pca/pca_fakecontainer_10cmtarget_million";
+  char *backgroundBase="/unix/anita1/creamtea/minerva/fakecontainer_notarget/pca/pca_fakecontainer_notarget_million";
+  //  char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million";
+  char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
 
 
-  Int_t numBackground=10000;
+  Int_t numBackgroundMillions=10;
+  Int_t numBackground=1000*numBackgroundMillions;
   Int_t numTargetMillions=10;
   Int_t numTarget=numTargetMillions*1000;
   char fileName[180];
 
   TChain *backTree = new TChain("pcaTree");
-  for(Int_t startFile=1;startFile<numBackground;startFile+=1000) {
-    Int_t endFile=startFile+999;
-    sprintf(fileName,"%s_%d_%d.root",backgroundBase,startFile,endFile);
+
+  for(Int_t startFile=1;startFile<numBackgroundMillions;startFile++) {
+    sprintf(fileName,"%s_%d.root",backgroundBase,startFile);
     backTree->Add(fileName);
     //    cout << fileName << endl;
   }

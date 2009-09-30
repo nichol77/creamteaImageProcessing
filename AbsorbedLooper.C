@@ -8,6 +8,7 @@
 #include <TCanvas.h>
 #include <iostream>
 #include <list>
+#define NUM_ITS 1
 
 void AbsorbedLooper::MakeSliceHists(int numBins)
 {
@@ -129,9 +130,12 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
    int dz=binWidth;
    const int numSlices=2*(6000/dz)+1;
    std::cout << "Using " << numSlices << " slices\n";
-   TFile *fp = new TFile ("absorbedOut.root","RECREATE");
+   char outName[FILENAME_MAX];
+   sprintf(outName,"/unix/anita1/creamtea/rjn/absorbedOut_%d.root",binWidth);
+   TFile *fp = new TFile (outName,"RECREATE");
    TH2F *histRawAbsorbed[numSlices];
    TH2F *histWeightedAbsorbed[numSlices];
+   TH2F *histWeightedAbsorbedIter[NUM_ITS][numSlices];
    TH2F *histGaussianWeightedAbsorbed[numSlices];
    Int_t zSlice[numSlices];
    Double_t dzSlice[numSlices];
@@ -163,6 +167,16 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
 					  numBins,-maxXY,maxXY);
      histGaussianWeightedAbsorbed[i]->SetXTitle("x-position (mm)");
      histGaussianWeightedAbsorbed[i]->SetYTitle("y-position (mm)");
+
+//      for(int it=0;it<NUM_ITS;it++) {
+//        sprintf(histName,"histWeightedSliceIt%d_%d",it,z);		
+//        sprintf(histTitle,"Weighted Absorptions (Iter %d), Slice at Z=%d mm",it,z); 
+//        histWeightedAbsorbedIter[it][i]=new TH2F(histName,histTitle,numBins,
+// 						-maxXY,maxXY,
+// 						numBins,-maxXY,maxXY);
+//        histWeightedAbsorbedIter[it][i]->SetXTitle("x-position (mm)");
+//        histWeightedAbsorbedIter[it][i]->SetYTitle("y-position (mm)");
+//      }
    }
 
    std::list<Long64_t> validStopperEntryList;
@@ -191,7 +205,8 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
    std::list<Long64_t>::iterator validIt;     
    Int_t binx,biny,bin;
    Double_t arbThresh=1./numSlices;
-
+   arbThresh=0;
+   
    char graphName[180];
    //Now loop over the valid entries
    Int_t muonCount=0;
@@ -249,8 +264,13 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
 						 
      
    }
-   //Same again but using the weighted histograms as input
-//    for(int it=1;it<5;it++) {
+   //   Same again but using the weighted histograms as input
+
+
+   
+ //   for(int it=1;it<NUM_ITS;it++) {
+//      muonCount=0;
+//      std::cout << "Starting iteration number " << it << "\n";
 //      //Now loop over the valid entries
 //      for(validIt=validStopperEntryList.begin(); 
 // 	 validIt != validStopperEntryList.end() ; 
@@ -264,23 +284,40 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
 //        // moderately clever. We find the bin in each slice that the muon passes 
 //        // through and calculate a weight (for each slice on each track) that is
 //        // proportional to the number of coincident tracks in each voxel.
-//      Double_t sumNxyz=0;
-//      Double_t weights[numSlices];
-//      for(int slice=0;slice<numSlices;slice++) {
-//        Double_t xPos=xGrad*zSlice[slice]+xCut;
-//        Double_t yPos=yGrad*zSlice[slice]+yCut;
-//        binx=histWeightedAbsorbed[slice][it-1]->GetXaxis()->FindBin(xPos);
-//        biny=histWeightedAbsorbed[slice][it-1]->GetXaxis()->FindBin(yPos);
-//        weights[slice]=histWeightedAbsorbed[slice][it-1]->GetBinContent(binx,biny);
-//        sumNxyz+=weights[slice];
-//      }
+//        Double_t sumNxyz=0;
+//        Double_t weights[numSlices];
+//        for(int slice=0;slice<numSlices;slice++) {
+// 	 Double_t xPos=xGrad*zSlice[slice]+xCut;
+// 	 Double_t yPos=yGrad*zSlice[slice]+yCut;
+// 	 if(it==1) {
+// 	   binx=histWeightedAbsorbed[slice]->GetXaxis()->FindBin(xPos);
+// 	   biny=histWeightedAbsorbed[slice]->GetXaxis()->FindBin(yPos);
+// 	   weights[slice]=histWeightedAbsorbed[slice]->GetBinContent(binx,biny);
+// 	 }
+// 	 else {
+// 	   binx=histWeightedAbsorbedIter[it-1][slice]->GetXaxis()->FindBin(xPos);
+// 	   biny=histWeightedAbsorbedIter[it-1][slice]->GetXaxis()->FindBin(yPos);
+// 	   weights[slice]=histWeightedAbsorbedIter[it-1][slice]->GetBinContent(binx,biny);
+// 	 }
 
-//      for(int slice=0;slice<numSlices;slice++) {
-//        weights[slice]/=sumNxyz;
-//        Double_t xPos=xGrad*zSlice[slice]+xCut;
-//        Double_t yPos=yGrad*zSlice[slice]+yCut;
-//        histWeightedAbsorbed[slice]->Fill(xPos,yPos,weights[slice]);
-//      }          
+
+// 	 sumNxyz+=weights[slice];
+//        }
+       
+//        for(int slice=0;slice<numSlices;slice++) {
+// 	 weights[slice]/=sumNxyz;
+// 	 Double_t xPos=xGrad*zSlice[slice]+xCut;
+// 	 Double_t yPos=yGrad*zSlice[slice]+yCut;
+// 	 histWeightedAbsorbedIter[it][slice]->Fill(xPos,yPos,weights[slice]);
+//        }          
+       
+//        sprintf(graphName,"grMuon%d_%d",muonCount,it);
+//        fitty->SetParameters(0,0,1);
+//        TGraph *gr = new TGraph(numSlices,dzSlice,weights);
+//        gr->SetName(graphName);
+//        gr->Fit("fitty","QR");     
+//        gr->Write();
+//        muonCount++;
 //      }
 //    }
 
@@ -326,7 +363,7 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
 
   sprintf(canName,"canGaussianWeighted");
   TCanvas *canGaussianWeighted = new TCanvas(canName,canName);
-  canGaussianWeighted->Divide(4,numRows);
+  canGaussianWeighted->Divide(numCols,numRows,0,0);
   for(int slice=0;slice<numSlices;slice++) {    
     canGaussianWeighted->cd(slice+1);
     gPad->SetLogz();
@@ -391,7 +428,7 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
    int dz=binWidth;
    const int numSlices=2*(6000/dz)+1;
    std::cout << "Using " << numSlices << " slices\n";
-   TFile *fp = new TFile ("absorbedRecoOut.root","RECREATE");
+   TFile *fp = new TFile ("/unix/anita1/creamtea/rjn/absorbedRecoOut.root","RECREATE");
    TH2F *histRawAbsorbed[numSlices];
    TH2F *histWeightedAbsorbed[numSlices];
    TH2F *histGaussianWeightedAbsorbed[numSlices];
@@ -453,6 +490,7 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
    std::list<Long64_t>::iterator validIt;     
    Int_t binx,biny,bin;
    Double_t arbThresh=1./numSlices;
+   arbThresh=0;
 
    char graphName[180];
    //Now loop over the valid entries
@@ -531,9 +569,9 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
 //      for(int slice=0;slice<numSlices;slice++) {
 //        Double_t xPos=xGrad*zSlice[slice]+xCut;
 //        Double_t yPos=yGrad*zSlice[slice]+yCut;
-//        binx=histWeightedAbsorbed[slice][it-1]->GetXaxis()->FindBin(xPos);
-//        biny=histWeightedAbsorbed[slice][it-1]->GetXaxis()->FindBin(yPos);
-//        weights[slice]=histWeightedAbsorbed[slice][it-1]->GetBinContent(binx,biny);
+//        binx=histWeightedAbsorbed[it-1][slice]->GetXaxis()->FindBin(xPos);
+//        biny=histWeightedAbsorbed[it-1][slice]->GetXaxis()->FindBin(yPos);
+//        weights[slice]=histWeightedAbsorbed[it-1][slice]->GetBinContent(binx,biny);
 //        sumNxyz+=weights[slice];
 //      }
 
@@ -588,7 +626,7 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
 
   sprintf(canName,"canGaussianWeighted");
   TCanvas *canGaussianWeighted = new TCanvas(canName,canName);
-  canGaussianWeighted->Divide(4,numRows);
+  canGaussianWeighted->Divide(numCols,numRows,0,0);
   for(int slice=0;slice<numSlices;slice++) {    
     canGaussianWeighted->cd(slice+1);
     gPad->SetLogz();
