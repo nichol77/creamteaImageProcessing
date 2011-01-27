@@ -42,9 +42,9 @@ int main(int argc, char** argv){
   Nx = Ny = Nz = 100;
   char fileNameLambda[80];
 
-  int iterations = 40;
+  int iterations = 2;
 
-  sprintf(fileNameLambda,"Lambda_40iterations_10cmTarget_%d_muons__FINAL____a.root",muons);
+  sprintf(fileNameLambda,"Lambda_2iterations_10cmTarget_%d_muons__FINAL____a.root",muons);
 
   //gSystem->CompileMacro("LambdaPcaTreeLooper.C","k");
 

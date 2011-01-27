@@ -20,10 +20,13 @@ public :
    Int_t           fCurrent; //!current Tree number in a TChain
 
    std::map <int, std::map<int, double> > L;
-   std::map <int, double> Lambda;
-   std::map <int, double> Gradient;
-   std::map <int, double> Sigma;
-   std::map <int, double> S;
+   std::map <int, double> Lambda; ///< Does it make sense to switch these to arrays?
+   //   Int_t fVoxelCountl
+   // double *Lambda;
+   std::map <int, double> Gradient; ///< Does it make sense to switch these to arrays?
+   //double *Gradient;
+   std::map <int, double> Sigma; ///< Does it make sense to switch these to arrays?
+   std::map <int, double> S; ///< Does it make sense to switch these to arrays?
 
 
    // Declaration of leaf types

@@ -20,10 +20,16 @@ public :
    Int_t           fCurrent; //!current Tree number in a TChain
 
    std::map <int, std::map<int, double> > L;
-   std::map <int, double> Lambda;
-   std::map <int, double> Gradient;
-   std::map <int, double> Sigma;
-   std::map <int, double> S;
+   //   std::map <int, double> Lambda;
+   //   std::map <int, double> Gradient;
+   Int_t fVoxelCount;
+   double *Lambda;
+   double *Gradient;  
+   //   std::map <int, double> Sigma;
+   //   std::map <int, double> S;
+   Int_t fNumMuons;
+   double *Sigma;
+   double *S;
 
 
    // Declaration of leaf types

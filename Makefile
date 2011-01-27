@@ -7,7 +7,7 @@ include Makefile.arch
 
 #Site Specific  Flags
 SYSINCLUDES	= 
-SYSLIBS         = 
+SYSLIBS         = -L /home/rjn/thirdParty/lib/ -lprofiler
 
 SIMPLE_GEANT_SIM_DIR=/home/rjn/creamtea/simpleGeantSim
 
