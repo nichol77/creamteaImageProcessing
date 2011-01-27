@@ -4,8 +4,9 @@
 void doBackgroundSubtraction()
 {
   char *backgroundBase="/unix/anita1/creamtea/minerva/fakecontainer_notarget/pca/pca_fakecontainer_notarget_million";
-  //  char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million";
-  char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
+  // char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million";
+  // char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
+  char *targetBase="/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million";
 
 
   Int_t numBackgroundMillions=10;
@@ -136,11 +137,11 @@ void doBackgroundSubtraction()
 //   histDiffNeg->Draw();
 	
 
-//   TCanvas *canSlice = new TCanvas("canSlice","canSlice");
-//   canSlice->Divide(5,6);
-//   for(int i=0;i<numBins;i++) {
-//     canSlice->cd(i+1);
-//     histDiffPosXYSlice[i]->Draw("colz");
-//   }
+   TCanvas *canSlice = new TCanvas("canSlice","canSlice");
+   canSlice->Divide(5,6);
+   for(int i=0;i<numBins;i++) {
+     canSlice->cd(i+1);
+     histDiffPosXYSlice[i]->Draw("colz");
+   }
 
 }
