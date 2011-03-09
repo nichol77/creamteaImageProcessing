@@ -25,6 +25,7 @@ public :
    Int_t fVoxelCount;
    double *Lambda;
    double *Gradient;  
+   double *PreFactorEng;
    //   std::map <int, double> Sigma;
    //   std::map <int, double> S;
    Int_t fNumMuons;
@@ -33,6 +34,7 @@ public :
 
 
    // Declaration of leaf types
+   Double_t        intEng;
    Double_t        xPosTrue;
    Double_t        yPosTrue;
    Double_t        zPosTrue;
@@ -53,8 +55,12 @@ public :
    Double_t        thetayzReco;
    Double_t        xzGradReco[2];
    Double_t        yzGradReco[2];
+   Double_t        xzCutReco[2];
+   Double_t        yzCutReco[2];
+   Double_t        xyzFitQualReco[2];
 
    // List of branches
+   TBranch        *b_intEng;   //!
    TBranch        *b_xPosTrue;   //!
    TBranch        *b_yPosTrue;   //!
    TBranch        *b_zPosTrue;   //!
@@ -75,6 +81,9 @@ public :
    TBranch        *b_thetayzReco;   //!
    TBranch        *b_xzGradReco;   //!
    TBranch        *b_yzGradReco;   //!
+   TBranch        *b_xzCutReco;   //!
+   TBranch        *b_yzCutReco;   //!
+   TBranch        *b_xyzFitQualReco;   //!
 
    LambdaPcaTreeLooper(TTree *tree=0);
    virtual ~LambdaPcaTreeLooper();
@@ -157,16 +166,17 @@ void LambdaPcaTreeLooper::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
+   fChain->SetBranchAddress("intEng", &intEng, &b_intEng);
    fChain->SetBranchAddress("xPosTrue", &xPosTrue, &b_xPosTrue);
    fChain->SetBranchAddress("yPosTrue", &yPosTrue, &b_yPosTrue);
    fChain->SetBranchAddress("zPosTrue", &zPosTrue, &b_zPosTrue);
    fChain->SetBranchAddress("thetaTrue", &thetaTrue, &b_thetaTrue);
    fChain->SetBranchAddress("thetaxzTrue", &thetaxzTrue, &b_thetaxzTrue);
    fChain->SetBranchAddress("thetayzTrue", &thetayzTrue, &b_thetayzTrue);
-   fChain->SetBranchAddress("xzCutTrue", xzCutTrue, &b_xzCutTrue);
-   fChain->SetBranchAddress("yzCutTrue", yzCutTrue, &b_yzCutTrue);
    fChain->SetBranchAddress("xzGradTrue", xzGradTrue, &b_xzGradTrue);
    fChain->SetBranchAddress("yzGradTrue", yzGradTrue, &b_yzGradTrue);
+   fChain->SetBranchAddress("xzCutTrue", xzCutTrue, &b_xzCutTrue);
+   fChain->SetBranchAddress("yzCutTrue", yzCutTrue, &b_yzCutTrue);
    fChain->SetBranchAddress("xyzFitQualTrue", xyzFitQualTrue, &b_xyzFitQualTrue);
    fChain->SetBranchAddress("gotRecoPCA", &gotRecoPCA, &b_gotRecoPCA);
    fChain->SetBranchAddress("xPosReco", &xPosReco, &b_xPosReco);
@@ -177,6 +187,9 @@ void LambdaPcaTreeLooper::Init(TTree *tree)
    fChain->SetBranchAddress("thetayzReco", &thetayzReco, &b_thetayzReco);
    fChain->SetBranchAddress("xzGradReco", xzGradReco, &b_xzGradReco);
    fChain->SetBranchAddress("yzGradReco", yzGradReco, &b_yzGradReco);
+   fChain->SetBranchAddress("xzCutReco", xzCutReco, &b_xzCutReco);
+   fChain->SetBranchAddress("yzCutReco", yzCutReco, &b_yzCutReco);
+   fChain->SetBranchAddress("xyzFitQualReco", xyzFitQualReco, &b_xyzFitQualReco);
    Notify();
 }
 
