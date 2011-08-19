@@ -7,7 +7,7 @@ include Makefile.arch
 
 #Site Specific  Flags
 SYSINCLUDES	= 
-SYSLIBS         = -L /home/rjn/thirdParty/lib/ -lprofiler
+SYSLIBS         = #-L /home/rjn/thirdParty/lib/ -lprofiler
 
 SIMPLE_GEANT_SIM_DIR=/home/rjn/creamtea/simpleGeantSim
 
@@ -20,7 +20,7 @@ LIBS          = $(ROOTLIBS) -lMathMore -lMinuit $(SYSLIBS)
 GLIBS         = $(ROOTGLIBS) $(SYSLIBS)
 
 
-all : 3DgradScan imageQuality GenerateLambdaMap
+all : 3DgradScan imageQuality GenerateLambdaMap GenerateLambdaMapMLSD
 
 
 
@@ -57,7 +57,7 @@ clean:
 	@rm -f $(LIBRARY)
 	@rm -f $(ROOT_LIBRARY)
 	@rm -f $(subst .$(DLLSUF),.so,$(ROOT_LIBRARY))	
-	@rm -f 3DgradScan *.so imageQuality GenerateLambdaMap
+	@rm -f 3DgradScan *.so imageQuality GenerateLambdaMap GenerateLambdaMapMLSD
 #############################################################################
 
 
