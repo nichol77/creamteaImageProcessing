@@ -96,6 +96,7 @@ public :
    virtual void LambdaFill(int VoxelCount);
    virtual void GradientFill();
    virtual void LambdaAlpha(double Alpha);
+   virtual void NextLambdaMLS_EM();
    virtual void SigmaFill();
    virtual double Cost(double Alpha, int first, int last);
    virtual void     FillPosHist(TH3F *histPos, Double_t thetaCut=0);

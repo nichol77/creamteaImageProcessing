@@ -446,6 +446,39 @@ void LambdaPcaTreeLooper::LambdaAlpha(double Alpha){
 }
 
 
+
+//Update Lambda using MLS-EM (formula 7 from Liu et al 2009)
+void LambdaPcaTreeLooper::NextLambdaMLS_EM() {
+  clock_t LambdaStart = clock();
+  
+  double newLambda;
+
+
+  double *lijVoxel = new double [fVoxelCount];
+  double *otherSum = new double [fVoxelCount];
+  memset(lijVoxel,0,fVoxelCount*sizeof(double));
+  memset(otherSum,0,fVoxelCount*sizeof(double));
+    
+    for(std::map<int,map<int,double> >::iterator muonIter = L.begin(); muonIter != L.end(); ++muonIter){ //loop over muons
+      for(std::map<int,double>::iterator voxelIter = (muonIter->second).begin(); voxelIter != (muonIter->second).end(); ++voxelIter){ //loop over voxels
+	lijVoxel[voxelIter->first]+=voxelIter->second;
+	otherSum[voxelIter->first]+=voxelIter->second*S[muonIter->first]/Sigma[muonIter->first];
+      }
+    }
+	
+  
+
+   for(int voxId=0;voxId<fVoxelCount;voxId++) {
+     newLambda=Lambda[voxId]*otherSum[voxId]/lijVoxel[voxId];
+     if(newLambda < LAMBDA_AIR) newLambda = LAMBDA_AIR;
+     Lambda[voxId] = newLambda;
+   }
+   printf("NextLambdaMLS_EM: %f\n", ((double)(clock() - LambdaStart) / CLOCKS_PER_SEC));
+   delete [] lijVoxel;
+   delete [] otherSum;
+}
+
+
 void LambdaPcaTreeLooper::SigmaFill(){
   
    clock_t SigmaStart = clock();
@@ -483,25 +516,25 @@ void LambdaPcaTreeLooper::SigmaFill(){
 
       
 
-   for(std::map<int,map<int,double> >::iterator iter1 = L.begin(); iter1 != L.end(); ++iter1){ //loop over muons
-      Sigma[iter1->first] = 0;
-      for(std::map<int,double>::iterator iter2 = (iter1->second).begin(); iter2 != (iter1->second).end(); ++iter2){
-	 Sigma[iter1->first] += iter2->second * Lambda[iter2->first];
+   for(std::map<int,map<int,double> >::iterator muonIter = L.begin(); muonIter != L.end(); ++muonIter){ //loop over muons
+      Sigma[muonIter->first] = 0;
+      for(std::map<int,double>::iterator voxelIter = (muonIter->second).begin(); voxelIter != (muonIter->second).end(); ++voxelIter){
+	 Sigma[muonIter->first] += voxelIter->second * Lambda[voxelIter->first];
       }
-      //      Sigma[iter1->first] *= prefactor;///(intEng*intEng);    
-      //    Sigma[iter1->first] *= prefactor;
-      if(iter1->first==0) {
-	 std::cout << "Before factor: " << Sigma[iter1->first] << "\n";
+      //      Sigma[muonIter->first] *= prefactor;///(intEng*intEng);    
+      //    Sigma[muonIter->first] *= prefactor;
+      if(muonIter->first==0) {
+	 std::cout << "Before factor: " << Sigma[muonIter->first] << "\n";
       }
-      Sigma[iter1->first] *= PreFactorEng[iter1->first];
-      prefactorNum=PreFactorEng[iter1->first];
-      Sigma[iter1->first] += 0.000049;
-      muonNum=iter1->first;   
-      sigmaNum=Sigma[iter1->first];
-      sNum=S[iter1->first];
+      Sigma[muonIter->first] *= PreFactorEng[muonIter->first];
+      prefactorNum=PreFactorEng[muonIter->first];
+      Sigma[muonIter->first] += 0.000049;
+      muonNum=muonIter->first;   
+      sigmaNum=Sigma[muonIter->first];
+      sNum=S[muonIter->first];
 
-      if(iter1->first==0) {
-	 std::cout << "After factor: " << Sigma[iter1->first] << "\n";
+      if(muonIter->first==0) {
+	 std::cout << "After factor: " << Sigma[muonIter->first] << "\n";
       }
 
 #ifdef MAKE_DEBUG_TREE
@@ -544,9 +577,9 @@ void LambdaPcaTreeLooper::GradientFill(){
    memset(Gradient,0,fVoxelCount*sizeof(double)); 
    //  Gradient.clear();
 
-   for(std::map<int,map<int,double> >::iterator iter1 = L.begin(); iter1 != L.end(); ++iter1){
-       for(std::map<int,double>::iterator iter = (iter1->second).begin(); iter != (iter1->second).end(); ++iter){
-	  Gradient[iter->first] += iter->second * ((1 - (S[iter1->first]/Sigma[iter1->first])))/Sigma[iter1->first];
+   for(std::map<int,map<int,double> >::iterator muonIter = L.begin(); muonIter != L.end(); ++muonIter){
+       for(std::map<int,double>::iterator iter = (muonIter->second).begin(); iter != (muonIter->second).end(); ++iter){
+	  Gradient[iter->first] += iter->second * ((1 - (S[muonIter->first]/Sigma[muonIter->first])))/Sigma[muonIter->first];
       }
    }
    for(voxelNum=0;voxelNum<fVoxelCount;voxelNum++) {
