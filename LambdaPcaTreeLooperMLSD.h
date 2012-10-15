@@ -21,6 +21,7 @@ public :
 
    std::map <int, std::map<int, double> > L;
    std::map <int, std::map<int, double> > T;
+std::map <int, std::map<int, double> > A;
    std::map <int, std::map<int, double> > B;
    std::map <int, std::map<int, double> > C;
    //   std::map <int, double> Lambda;
@@ -33,8 +34,18 @@ public :
    //   std::map <int, double> S;
    Int_t fNumMuons;
 //   double *Sigma;
+   double *Sj;
    double *S; // S_i is not the scattering angle!!!
    double *M;
+   double *avetheta;
+   double *mintheta;
+   double *maxtheta;
+   double *avedist;
+   double *mindist;
+   double *maxdist;
+   double *rmstheta;
+   double *rmsdist;
+   int *nomuons;
 //   double *Sum2;
 //   double *Sum3;
    double *dx;
@@ -122,11 +133,12 @@ public :
    virtual void LambdaAlpha(double Alpha);
    virtual void LambdaNew();
    virtual void SigmaFill();
-   virtual double Cost(double Alpha, int first, int last);
+   virtual double Cost(double Alpha, int first, int last, int iteration);
    virtual void     FillPosHist(TH3F *histPos, Double_t thetaCut=0);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
    virtual void DrawSlices(int topSlice, int bottomSlice, int Nx, int Ny, int Nz,char* fileNameLambda);
+   virtual void DrawMuons(int outputSlice, int Nx, int Ny, int Nz, char* FileNameMuon);
 };
 
 
@@ -138,9 +150,12 @@ LambdaPcaTreeLooperMLSD::LambdaPcaTreeLooperMLSD(TTree *tree)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
+     TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/creamtea/sfayer/1mdetector_5cmtarget/pca/pca_small1mdetector_5cmtarget_million_1.root");
+							     //"/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
       if (!f) {
-         f = new TFile("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
+	f = new TFile("/unix/creamtea/sfayer/1mdetector_5cmtarget/pca/pca_small1mdetector_5cmtarget_million_1.root");
+
+	   //"/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
       }
       tree = (TTree*)gDirectory->Get("pcaTree");
 

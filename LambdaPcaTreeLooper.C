@@ -105,7 +105,7 @@ void LambdaPcaTreeLooper::SLFill(int first, int last, int Nx, int Ny, int Nz){
 #ifdef MAKE_DEBUG_TREE
    Int_t muonNum,voxelNum;
    Double_t lij;
-   TFile *fpLij = new TFile("/tmp/lijOut.root","RECREATE");
+   TFile *fpLij = new TFile("/unix/creamtea/sfayer/temp/lijOut.root","RECREATE");
    TTree *lijTree = new TTree("lijTree","lijTree");
    lijTree->Branch("muonNum",&muonNum,"muonNum/I");
    lijTree->Branch("voxelNum",&voxelNum,"voxelNum/I");
@@ -119,12 +119,12 @@ void LambdaPcaTreeLooper::SLFill(int first, int last, int Nx, int Ny, int Nz){
    clock_t LijStart = clock();
 
    //Size of cuboid
-   double MaxX = 6500;
-   double MinX = -6500;
-   double MaxY = 6500;
-   double MinY = -6500;
-   double MaxZ = 6500;
-   double MinZ = -6500;
+   double MaxX = 500;
+   double MinX = -500;
+   double MaxY = 500;
+   double MinY = -500;
+   double MaxZ = 500;
+   double MinZ = -500;
 
    //FitQuality Cutoff
    double FitQual = 0.5;
@@ -450,7 +450,7 @@ void LambdaPcaTreeLooper::SigmaFill(){
   
    clock_t SigmaStart = clock();
 #ifdef MAKE_DEBUG_TREE
-   static TFile *fpSigma = new TFile("/tmp/sigmaOut.root","RECREATE");
+   static TFile *fpSigma = new TFile("/unix/creamtea/sfayer/temp/sigmaOut.root","RECREATE");
    static TTree *sigmaTree = 0;// (TTree*) fpSigma->Get("sigmaTree");
 #endif
    static int doneInit=0;
@@ -520,7 +520,7 @@ void LambdaPcaTreeLooper::SigmaFill(){
 void LambdaPcaTreeLooper::GradientFill(){
    clock_t GradientStart = clock();
 #ifdef MAKE_DEBUG_TREE
-   static TFile *fpGrad = new TFile("/tmp/gradOut.root","RECREATE");
+   static TFile *fpGrad = new TFile("/unix/creamtea/sfayer/temp/gradOut.root","RECREATE");
    static TTree *gradTree = (TTree*) fpGrad->Get("gradTree");
 #endif
    static Int_t voxelNum=0;
@@ -576,7 +576,7 @@ double LambdaPcaTreeLooper::Cost(double Alpha, int first, int last){
    static int muonNum;
    static double sNum;
 #ifdef MAKE_DEBUG_TREE
-   static TFile *fpCost = new TFile("/tmp/costOut.root","RECREATE");
+   static TFile *fpCost = new TFile("/unix/creamtea/sfayer/temp/costOut.root","RECREATE");
    static TTree *costTree =0;
    
    if(!costTree) {
@@ -646,7 +646,7 @@ void LambdaPcaTreeLooper::DrawSlices(int topSlice, int bottomSlice, int Nx, int 
 //      int z = 50;
       int z = 0;
       char HistName[80];
-      for(int SliceNo = 1; SliceNo < 100; SliceNo++){
+      for(int SliceNo = 1; SliceNo < Nz; SliceNo++){
 	 sprintf(HistName,"Slice_%d",SliceNo);
 	 TH2F *CurrentLSlice = new TH2F(HistName,HistName, Nx, 0.0, (double) Nx, Ny, 0.0, (double) Ny);
 

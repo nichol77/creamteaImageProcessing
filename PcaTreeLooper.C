@@ -97,12 +97,12 @@ if(fChain==0) return;
 clock_t LijStart = clock();
 
 //Size of cuboid
-double MaxX = 6500;
-double MinX = -6500;
-double MaxY = 6500;
-double MinY = -6500;
-double MaxZ = 6500;
-double MinZ = -6500;
+double MaxX = 500;
+double MinX = -500;
+double MaxY = 500;
+double MinY = -500;
+double MaxZ = 500;
+double MinZ = -500;
 
 //FitQuality Cutoff
 double FitQual = 0.5;

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <map>
 #include <cstring>
-#include "DetectorDefs.hh"
+#include "/unix/creamtea/sfayer/1mdetector_10cmtarget/include/DetectorDefs.hh"
 #include "LambdaPcaTreeLooperMLSD.C"
 
 using namespace std;
@@ -26,37 +26,39 @@ int main(int argc, char** argv){
     seconds = atoi(argv[1]);
   } 
 
-  int muons = seconds*28167; //28K = ~1 second. max 315381
+  int muons = seconds*10000/60; //28K = ~1 second for 13 m detector, 1 (muon/cm)/minute. max 315381
 
   cout << "Number of muons: " <<muons << endl;
 
   //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_30cmtarget/pca/pca_fakecontainer_30cmtarget_million";
 //  char *targetBase="/unix/creamtea/minerva/fakecontainer_10cmtarget/pcaMLSD/pca_fakecontainer_10cmtarget_million";
-  char *targetBase="/unix/creamtea/minerva/fakecontainer_30cmtarget/pcaMLSD/pca_fakecontainer_30cmtarget_million";
+  char *targetBase="/unix/creamtea/sfayer/1mdetector_10cmtarget/pca/pca_small1mdetector_10cmtarget_million";
   //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
   //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_notarget/pca/pca_fakecontainer_notarget_million";
 
-  Int_t numTargetMillions=10;
+  Int_t numTargetMillions=2;
   Int_t numTarget=numTargetMillions*1000;
   char fileName[180];
 
   TChain *targetTree = new TChain("pcaTree");
-  for(Int_t startFile=1;startFile<numTargetMillions;startFile++) {
+  for(Int_t startFile=1;startFile<=numTargetMillions;startFile++) {
     sprintf(fileName,"%s_%d.root",targetBase,startFile);
     targetTree->Add(fileName);
-    //    cout << fileName << endl;
+    cout << fileName << endl;
   }
 
   int Nx, Ny, Nz;
-  Nx = Ny = Nz = 100;
+  Nx = 10;
+    Ny = 10;
+    Nz = 10;
   char fileNameLambda[180];
 
   int iterations = 50;
 
-  sprintf(fileNameLambda,"/home/lindac/Desktop/MLSDEtAll/Lambda_%diterations_30cmTarget_%d_secondsXYTHRESH2GeV.root",iterations,seconds);
+  sprintf(fileNameLambda,"~/imageProcessing/trunk/iterations/Lambda_%diterations_10cmtarget_%d_secondsXYTHRESH2GeV.root",iterations,seconds);
+char *fileNameMuons="~/imageProcessing/trunk/tmp/inputMuons.root";
 
   //gSystem->CompileMacro("LambdaPcaTreeLooperMLSD.C","k");
-
 
   LambdaPcaTreeLooperMLSD targetLooperMLSD(targetTree);
   targetLooperMLSD.SLFill(0,muons,Nx,Ny,Nz);
@@ -156,13 +158,14 @@ double fx;
     cout << "**********************" << iii+1 << "***************************" << endl;
 
 
- fx=targetLooperMLSD.Cost(0.1,0,muons);
+    fx=targetLooperMLSD.Cost(0.1,0,muons,iii);
     targetLooperMLSD.LambdaNew();
 //    targetLooperMLSD.LambdaAlpha(xmin);
     targetLooperMLSD.SigmaFill();
 //    targetLooperMLSD.GradientFill();
   } //end loop iii
 
-  targetLooperMLSD.DrawSlices(100,1,Nx,Ny,Nz,fileNameLambda);
+  targetLooperMLSD.DrawSlices(Nz,1,Nx,Ny,Nz,fileNameLambda);
+  targetLooperMLSD.DrawMuons(50,Nx,Ny,Nz,fileNameMuons);
  
 }

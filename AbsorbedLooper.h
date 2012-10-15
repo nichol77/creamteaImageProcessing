@@ -48,8 +48,8 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     MakeSliceHists(int numBins=20);
-   virtual void     MakeSliceHistsIteratively(int binWidth=1000);
+   virtual void     MakeSliceHists(int numBins=100);
+   virtual void     MakeSliceHistsIteratively(int binWidth=100);
    virtual void     MakeSliceHistsIterativelyReco(int binWidth);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -63,9 +63,9 @@ AbsorbedLooper::AbsorbedLooper(TTree *tree)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_1.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/creamtea/sfayer/1mdetector_10cmtarget/pca/pca_small1mdetector_10cmtarget_million_1.root");
       if (!f) {
-         f = new TFile("/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_1.root");
+         f = new TFile("/unix/creamtea/sfayer/1mdetector_10cmtarget/pca/pca_small1mdetector_10cmtarget_million_1.root");
       }
       tree = (TTree*)gDirectory->Get("Absorbed");
 
@@ -152,8 +152,8 @@ Int_t AbsorbedLooper::Cut(Long64_t /*entry*/)
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
-  Int_t detLevel=-7000;
-  Int_t cutAt=5000;
+  Int_t detLevel=-800;
+  Int_t cutAt=500;
   if(TMath::Abs((xGrad*detLevel)+xCut)>cutAt) return -1;
   if(TMath::Abs((yGrad*detLevel)+yCut)>cutAt) return -1;
   if(xyzFitQual>1) return -1;
@@ -165,8 +165,8 @@ Int_t AbsorbedLooper::CutReco(Long64_t /*entry*/)
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
-  Int_t detLevel=-7000;
-  Int_t cutAt=5000;
+  Int_t detLevel=-800;
+  Int_t cutAt=500;
   if(TMath::Abs((xGradReco*detLevel)+xCutReco)>cutAt) return -1;
   if(TMath::Abs((yGradReco*detLevel)+yCutReco)>cutAt) return -1;
   if(xyzFitQual>1e3) return -1; //This cut needs to be examined
