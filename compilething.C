@@ -1,65 +1,44 @@
-#include <TFile.h>
-#include <TH3.h>
-#include <TTree.h>
-#include <TROOT.h>
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-#include <cmath>
-#include <map>
-#include <cstring>
-#include "/unix/creamtea/sfayer/10by10by10_10cm/include/DetectorDefs.hh"
-#include "LambdaPcaTreeLooper.C"
-
-using namespace std;
-
-int main(int argc, char** argv){
-char iterationsFile[180];
-char targetBase[180];
-  int seconds = 60;
-if(argc<3) {
-      std::cerr << "Usage:\t" << "<input file location and base name> <output name> <seconds(optional, default=60)>\n";
-return -1;
-   }
-strncpy(targetBase,argv[1],180);
-strncpy(iterationsFile,argv[2],180);
-  if(argc>3) seconds=atoi(argv[3]);
-  int muons = seconds*10000/60; //28K = ~1 second.
-  cout << "Number of muons: " << muons << endl;
-
+void compilething()
+{
   //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_30cmtarget/pca/pca_fakecontainer_30cmtarget_million";
-  //char *targetBase="/unix/creamtea/sfayer/1mdetector_10cmtarget_iron/pca/pca_small1mdetector_10cmtarget_iron_million";
-  //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
+  char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million";
+  // char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million";
   //char *targetBase="/unix/anita1/creamtea/minerva/fakecontainer_notarget/pca/pca_fakecontainer_notarget_million";
 
-  Int_t numTargetMillions=1;
+
+  Int_t numTargetMillions=10;
   Int_t numTarget=numTargetMillions*1000;
   char fileName[180];
 
   TChain *targetTree = new TChain("pcaTree");
-  for(Int_t startFile=1;startFile<=numTargetMillions;startFile++) {
-    sprintf(fileName,"%s_%d.root", targetBase,startFile);
+  for(Int_t startFile=1;startFile<numTargetMillions;startFile++) {
+    sprintf(fileName,"%s_%d.root",targetBase,startFile);
     targetTree->Add(fileName);
-    cout << fileName << endl;
+    //    cout << fileName << endl;
   }
+
+  int muons = 28000; //28K = ~1 second.
   int Nx, Ny, Nz;
-  Nx = 400;
-  Ny = 400;
-  Nz = 400;
-  char fileNameLambda[180];
+  Nx = Ny = Nz = 100;
+	int iterations = 3;
 
-  int iterations = 40;
+  gSystem->CompileMacro("WillTreeLooper.C","k");
 
-  sprintf(fileNameLambda,"~/imageProcessing/trunk/iterations/pic400Lambda_%diterations_%s_%d_seconds.root",iterations, iterationsFile,seconds);
-  //gSystem->CompileMacro("LambdaPcaTreeLooper.C","k");
-  cout << fileNameLambda << endl;
 
-  LambdaPcaTreeLooper targetLooper(targetTree);
+  char fileNameLambda[80];
+
+  sprintf(fileNameLambda,"little_lambda_%d.root",muons);
+
+
+  WillTreeLooper targetLooper(targetTree);
   targetLooper.SLFill(0,muons,Nx,Ny,Nz);
   targetLooper.LambdaFill(Nx*Ny*Nz);
   targetLooper.SigmaFill();
   targetLooper.GradientFill();
+  targetLooper.DrawSlices(50,48,100,100,100,fileNameLambda);
+
   
+  /*
   for(int iii = 0; iii < iterations; iii++){
 
     double ax = -1.0e-5;
@@ -85,7 +64,7 @@ strncpy(iterationsFile,argv[2],180);
     for(iter=1;iter<=ITMAX;iter++){ //main program loop.
       xm=0.5*(a+b);
       tol2=2.0*(tol1=tol*fabs(x)+ZEPS);
-      // cout << iii << "." << iter << "\t" << x << ":\t" <<  fx << endl;
+      cout << iii << "." << iter << "\t" << x << ":\t" <<  fx << endl;
       if(fabs(x-xm) <= (tol2-0.5*(b-a))){ //Test for done here.
 	xmin=x;
 	cout << iii << "." << iter <<  "\tReturn: " << x << ":\t" <<  fx << endl;
@@ -123,28 +102,31 @@ strncpy(iterationsFile,argv[2],180);
 	  SHFT(fv,fw,fx,fu)
 	  
 	  }else{
-	if(u < x) a=u; else b=u;
-	if(fu <= fw || w == x){
-	  v=w;
-	  w=u;
-	  fv=fw;
-	  fw=fu;
-	}else if (fu <= fv || v == x || v == w){
-	  v=u;
-	  fv=fu;
-	}
-      } //done with housekeeping, back for another iteration
+	    if(u < x) a=u; else b=u;
+	    if(fu <= fw || w == x){
+	      v=w;
+	      w=u;
+	      fv=fw;
+	      fw=fu;
+	    }else if (fu <= fv || v == x || v == w){
+	      v=u;
+	      fv=fu;
+	    }
+	  } //done with housekeeping, back for another iteration
     }
     if(test == 0){
       xmin=x; //Never get here
       cout << iii << "." << iter <<  "\tReturn: " << x << ":\t" <<  fx << endl;
     }
-    cout << "**********************" << iii+1 << "***************************" << endl;
+  cout << "**********************" << iii+1 << "***************************" << endl;
 
-    targetLooper.LambdaAlpha(xmin);
-    targetLooper.SigmaFill();
-    targetLooper.GradientFill();
+  targetLooper.LambdaAlpha(xmin);
+  targetLooper.SigmaFill();
+  targetLooper.GradientFill();
   }
 
-  targetLooper.DrawSlices(50,48,Nx,Ny,Nz,fileNameLambda);
+  targetLooper.DrawSlices(50,48,100,100,100,fileNameLambda);
+  */
+
 }
+

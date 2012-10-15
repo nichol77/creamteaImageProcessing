@@ -12,7 +12,7 @@
 #include <vector>
 using namespace std;
 
-//#define MAKE_DEBUG_TREE 1
+#define MAKE_DEBUG_TREE 1
 
 //#define MAKE_GRAD_TREE 1
 
@@ -113,7 +113,6 @@ void LambdaPcaTreeLooperMLSD::FillPosHist(TH3F *histPos, Double_t thetaCut)
 }
 
 
-
 //Fill Matrix L with muons from FIRST to LAST, and make the dx and dtheta vectors. Ni is the number of voxels in the i direction.
 void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz){
    //At some point might update this so that one can specify the first and last and only have array that size
@@ -136,16 +135,24 @@ void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz
    Int_t muonNum,voxelNum;
    Double_t lij;
    Double_t tij;
+Double_t aij;
    Double_t bij;
    Double_t cij;
-   TFile *fpLij = new TFile("/unix/creamtea/minerva/LindaDebugTree/lij.root","RECREATE");
+   Double_t dxNum;
+   Double_t dxthetaNum;
+   Double_t dthetaNum;
+   TFile *fpLij = new TFile("/unix/creamtea/sfayer/temp/lij.root","RECREATE");
    TTree *lijTree = new TTree("lijTree","lijTree");
    lijTree->Branch("muonNum",&muonNum,"muonNum/I");
    lijTree->Branch("voxelNum",&voxelNum,"voxelNum/I");
    lijTree->Branch("lij",&lij,"lij/D");
    lijTree->Branch("tij",&tij,"tij/D");
+lijTree->Branch("aij",&aij,"aij/D");
    lijTree->Branch("bij",&bij,"bij/D");
    lijTree->Branch("cij",&cij,"cij/D");
+   lijTree->Branch("dxNum",&dxNum,"dxNum/D");
+   lijTree->Branch("dxthetaNum",&dxthetaNum,"dxthetaNum/D");
+   lijTree->Branch("dthetaNum",&dthetaNum,"dthetaNum/D");
 #endif
 
 
@@ -155,12 +162,12 @@ void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz
    clock_t LijStart = clock();
 
    //Size of cuboid
-   double MaxX = 6500;
-   double MinX = -6500;
-   double MaxY = 6500;
-   double MinY = -6500;
-   double MaxZ = 6500;
-   double MinZ = -6500;
+   double MaxX = 500;
+   double MinX = -500;
+   double MaxY = 500;
+   double MinY = -500;
+   double MaxZ = 500;
+   double MinZ = -500;
 
 //   double deltax = 0.;
 //   double deltay = 0.;
@@ -258,7 +265,7 @@ void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz
 		  yCurID = (int) floor((yCurrent-MinY)/Vy);
 		  zCurID = (int) floor((zCurrent-MinZ)/Vz);
 		  
-		  //Hack because z=6500 is outside the box
+		  //Hack because z=500 is outside the box
 		  if(zCurID==Nz) zCurID--;
 		  if(yCurID==Ny) yCurID--;
 		  if(xCurID==Nx) xCurID--;
@@ -405,7 +412,7 @@ void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz
 		     tempMap[PCAID] += ExtraPCA;
 	
 		     //Fill Scattering Angle Array, so that the root file needn't be needlessly looped through when S is already in memory.
-		     S[jentry] = thetaTrue;
+		     S[jentry] = thetaTrue*thetaTrue;
 		     dThetax[jentry] = thetaxzTrue;
 		     dThetay[jentry] = thetayzTrue;
 		     dx[jentry] = dxTrue; //in mm
@@ -423,24 +430,30 @@ void LambdaPcaTreeLooperMLSD::SLFill(int first, int last, int Nx, int Ny, int Nz
 		     
 		     for(std::map<int, double>::iterator tempIt=tempMap.begin();
 			 tempIt!=tempMap.end();tempIt++) {
-			L[jentry][tempIt->first]=tempIt->second;
+			L[jentry][tempIt->first]=tempMap[tempIt->first]*Lxy;//tempIt->second;
 			T[jentry][tempIt->first]= tempMapT[tempIt->first]*Lxy;
-			if (T[jentry][tempIt->first]>13000.*TMath::Sqrt(3.)) T[jentry][tempIt->first]=13000.*TMath::Sqrt(3.);
+			if (T[jentry][tempIt->first]>((MaxZ-MinZ)*TMath::Sqrt(3.))) T[jentry][tempIt->first]=(MaxZ-MinZ)*TMath::Sqrt(3.);//assumes a cube
+			A[jentry][tempIt->first]=L[jentry][tempIt->first];
 			B[jentry][tempIt->first]=(0.5*L[jentry][tempIt->first]*L[jentry][tempIt->first])+(L[jentry][tempIt->first]*T[jentry][tempIt->first]);
 			C[jentry][tempIt->first]=(L[jentry][tempIt->first]*L[jentry][tempIt->first]*L[jentry][tempIt->first]/3.)+(L[jentry][tempIt->first]*L[jentry][tempIt->first]*T[jentry][tempIt->first])+(L[jentry][tempIt->first]*T[jentry][tempIt->first]*T[jentry][tempIt->first]);
 #ifdef MAKE_DEBUG_TREE
 			lij=tempIt->second;
 			voxelNum=tempIt->first;
 			tij = T[jentry][tempIt->first];
+			aij = A[jentry][tempIt->first];
 			bij = B[jentry][tempIt->first];
 			cij = C[jentry][tempIt->first];
-
 			lijTree->Fill();
 #endif
 		     }
 		     
 
-
+#ifdef MAKE_DEBUG_TREE
+		     dxNum = sqrt((dx[jentry]*dx[jentry]+dy[jentry]*dy[jentry])/2);
+		     dxthetaNum = (dx[jentry]*dThetax[jentry]+dy[jentry]*dThetay[jentry])/2;
+		     dthetaNum = sqrt((dThetax[jentry]*dThetax[jentry]+dThetay[jentry]*dThetay[jentry])/2);
+		     lijTree->Fill();
+#endif
 
 		     if(jentry == 146891) {
 			std::cout << jentry << "\t" << S[jentry] << "\t" << L[jentry][PCAID] << "\n";
@@ -508,11 +521,17 @@ void LambdaPcaTreeLooperMLSD::LambdaNew(){
    double newLambda;
 
    for(int voxId=0;voxId<fVoxelCount;voxId++) {
-      newLambda = S[voxId]/(2.*M[voxId]);
+      newLambda = Sj[voxId]/(2.*M[voxId]);
       if(newLambda < LAMBDA_AIR) newLambda = LAMBDA_AIR;
       if(isnan(newLambda)) newLambda = LAMBDA_AIR;
+      if(isinf(newLambda)) newLambda = LAMBDA_AIR;
+      if(M[voxId]<4) newLambda = LAMBDA_AIR;
+      /*if(newLambda>10) {
+std::cout << "voxID: " << voxId << "    Lambda: " << newLambda << "    S: " << Sj[voxId] << "     M: " << M[voxId] << endl;
+	//newLambda=LAMBDA_AIR;
+}*/
 
-      Lambda[voxId] = newLambda;
+Lambda[voxId] = newLambda;
    }
    printf("Lambda Alpha Fill: %f\n", ((double)(clock() - LambdaStart) / CLOCKS_PER_SEC));
 }
@@ -522,8 +541,11 @@ void LambdaPcaTreeLooperMLSD::SigmaFill(){
   
    clock_t SigmaStart = clock();
 #ifdef MAKE_DEBUG_TREE
-   static TFile *fpSigma = new TFile("/unix/creamtea/minerva/LindaDebugTree/sigma.root","RECREATE");
+   static TFile *fpSigma = new TFile("/unix/creamtea/sfayer/temp/sigma.root","RECREATE");
    static TTree *sigmaTree = (TTree*) fpSigma->Get("sigmaTree");
+   static Double_t sigmax=0;
+   static Double_t sigmaxtheta=0;
+   static Double_t sigmatheta=0;
 #endif
    static int doneInit=0;
    static Int_t muonNum=0;
@@ -549,6 +571,9 @@ void LambdaPcaTreeLooperMLSD::SigmaFill(){
 	 sigmaTree->Branch("aDNum",&aDNum, "aDNum/D");
 	 sigmaTree->Branch("bDNum",&bDNum, "bDNum/D");
 	 sigmaTree->Branch("cDNum",&cDNum, "cDNum/D");
+	 sigmaTree->Branch("sigmax",&sigmax,"sigmax/D");
+	 sigmaTree->Branch("sigmaxtheta",&sigmaxtheta,"sigmaxtheta/D");
+	 sigmaTree->Branch("sigmatheta",&sigmatheta,"sigmatheta/D");
 	 sigmaTree->Branch("thetaNum",&thetaNum, "thetaNum/D");
 	 sigmaTree->Branch("dxNum",&dxNum, "dxNum/D");
 	 sigmaTree->Branch("determinant",&determinant, "determinant/D");
@@ -559,6 +584,9 @@ void LambdaPcaTreeLooperMLSD::SigmaFill(){
 	 sigmaTree->SetBranchAddress("aDNum",&aDNum);
 	 sigmaTree->SetBranchAddress("bDNum",&bDNum);
 	 sigmaTree->SetBranchAddress("cDNum",&cDNum);
+	 sigmaTree->SetBranchAddress("sigmax",&sigmax);
+	 sigmaTree->SetBranchAddress("sigmaxtheta",&sigmaxtheta);
+	 sigmaTree->SetBranchAddress("sigmatheta",&sigmatheta);
 	 sigmaTree->SetBranchAddress("thetaNum",&thetaNum);
 	 sigmaTree->SetBranchAddress("dxNum",&dxNum);
 	 sigmaTree->SetBranchAddress("determinant",&determinant);
@@ -577,8 +605,11 @@ void LambdaPcaTreeLooperMLSD::SigmaFill(){
       determinant = 0.;
 
       for(std::map<int,double>::iterator iter2 = (iter1->second).begin(); iter2 != (iter1->second).end(); ++iter2){ //loop over voxels
-if (iter2->second==0.) continue;
-	 cD[iter1->first] += iter2->second * Lambda[iter2->first];
+	if (iter2->second==0.) {
+	  std::cout << "iter2->second==0" << endl;
+	  continue;
+      }
+	 cD[iter1->first] += A[iter1->first][iter2->first]*Lambda[iter2->first];
 	 bD[iter1->first] += B[iter1->first][iter2->first]*Lambda[iter2->first];
 	 aD[iter1->first] += C[iter1->first][iter2->first]*Lambda[iter2->first];
       }//end loop over voxels
@@ -588,6 +619,12 @@ if (iter2->second==0.) continue;
 	cD[iter1->first] *= PreFactorEng[iter1->first];
 	bD[iter1->first] *= PreFactorEng[iter1->first];
 	aD[iter1->first] *= PreFactorEng[iter1->first];
+#ifdef MAKE_DEBUG_TREE
+	sigmax = sqrt(aD[iter1->first]);
+	sigmaxtheta = bD[iter1->first];
+	sigmatheta = sqrt(cD[iter1->first]);
+#endif
+
       cD[iter1->first] += 0.000049;
 //      bD[iter1->first] -= 0.000049;
 //      cD[iter1->first] += 0.000049;
@@ -598,7 +635,7 @@ if (iter2->second==0.) continue;
 	aD[iter1->first]/=determinant;
 	bD[iter1->first]/=(determinant*(-1.));
 	cD[iter1->first]/=determinant;
- 
+
       if(iter1->first==0) {
 	 std::cout << "After factor: " << cD[iter1->first] << "\n";
      }
@@ -626,7 +663,7 @@ if (iter2->second==0.) continue;
 void LambdaPcaTreeLooperMLSD::GradientFill(){
    clock_t GradientStart = clock();
 #ifdef MAKE_GRAD_TREE
-   static TFile *fpGrad = new TFile("/unix/creamtea/minerva/LindaDebugTree/grad.root","RECREATE");
+   static TFile *fpGrad = new TFile("/unix/creamtea/sfayer/temp/grad.root","RECREATE");
    static TTree *gradTree = (TTree*) fpGrad->Get("gradTree");
 #endif
    static Int_t voxelNum=0;
@@ -727,7 +764,7 @@ static double ci;
 
 
 //cost Function
-double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last){
+double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last, int iteration){
 
    double cost=0;
    static double mat_W[2][2];
@@ -743,6 +780,7 @@ double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last){
    static int muonNum;
    static double muonCost;
    static double costVoxel;
+
 #ifdef MAKE_DEBUG_TREE
    static double sNum;
    static double mNum;
@@ -751,13 +789,13 @@ double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last){
    static double W11voxel;
    static double thetaNum;
    static double dxNum;
-
    static int voxelNum;
    static double gradientNum;
    static double lambdaNum;
-   static TFile *fpCost = new TFile("/unix/creamtea/minerva/LindaDebugTree/cost.root","RECREATE");
+static double voxel1;
+   static TFile *fpCost = new TFile("/unix/creamtea/sfayer/temp/cost.root","RECREATE");
    static TTree *costTree = 0;//(TTree*) fpCost->Get("costTree");
-   
+   static TTree *iterationTree = 0;
    if(!costTree) {
       costTree= new TTree("costTree","costTree");
       costTree->Branch("alpha",&myAlpha,"alpha/D");
@@ -767,7 +805,6 @@ double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last){
       costTree->Branch("mNum",&mNum,"mNum/D");
       costTree->Branch("lambdaNum",&lambdaNum,"lambdaNum/D");
       costTree->Branch("gradientNum",&gradientNum,"gradientNum/D");
-
       costTree->Branch("W00voxel",&W00voxel,"W00voxel/D");
       costTree->Branch("W01voxel",&W01voxel,"W01voxel/D");
       costTree->Branch("W11voxel",&W11voxel,"W11voxel/D");
@@ -777,18 +814,40 @@ double LambdaPcaTreeLooperMLSD::Cost(double Alpha, int first, int last){
       costTree->Branch("trace",&trace,"trace/D");
       costTree->Branch("product",&product,"product/D");
       costTree->Branch("voxelNum",&voxelNum,"voxelNum/I");
-   }
+      }
+   if(!iterationTree) {
+     iterationTree= new TTree("iterationTree","iterationTree");
+	iterationTree->Branch("voxel1",&voxel1,"voxel1/D");
+}
 #endif
 
    myAlpha=Alpha;
    static int madeSM=0;
 if(!madeSM){
-      S = new double[fVoxelCount];
+      Sj = new double[fVoxelCount];
       M = new double[fVoxelCount];
+ avetheta = new double[fVoxelCount];
+ mintheta = new double[fVoxelCount];
+ maxtheta = new double[fVoxelCount];
+ avedist = new double[fVoxelCount];
+ mindist = new double[fVoxelCount];
+ maxdist = new double[fVoxelCount];
+ rmstheta = new double[fVoxelCount];
+ rmsdist = new double[fVoxelCount];
+ nomuons = new int[fVoxelCount];
+memset(avetheta,0,fVoxelCount*sizeof(double)); 
+memset(avedist,0,fVoxelCount*sizeof(double)); 
+memset(mintheta,10000,fVoxelCount*sizeof(double)); 
+memset(mindist,10000,fVoxelCount*sizeof(double)); 
+memset(maxtheta,0,fVoxelCount*sizeof(double)); 
+memset(maxdist,0,fVoxelCount*sizeof(double));
+memset(rmstheta,0,fVoxelCount*sizeof(double)); 
+memset(rmsdist,0,fVoxelCount*sizeof(double)); 
+memset(nomuons,0,fVoxelCount*sizeof(int)); 
 	madeSM++;
-}
+ }
 
-   memset(S,0,fVoxelCount*sizeof(double)); 
+   memset(Sj,0,fVoxelCount*sizeof(double)); 
    memset(M,0,fVoxelCount*sizeof(double)); 
    for(std::map <int, std::map<int, double> >::iterator muonIter=L.begin();
        muonIter!=L.end();
@@ -800,12 +859,24 @@ if(!madeSM){
 	 mat_D[1][0] = bD[muonNum];
 	 mat_D[1][1] = cD[muonNum];
 
-
-
       for(std::map<int,double>::iterator iter = (muonIter->second).begin(); iter != (muonIter->second).end(); ++iter){
-
+if (iteration==0){
+if(abs(dThetax[muonNum])<mintheta[iter->first])mintheta[iter->first]=abs(dThetax[muonNum]);
+if(abs(dThetay[muonNum])<mintheta[iter->first])mintheta[iter->first]=abs(dThetay[muonNum]);
+if(abs(dThetax[muonNum])>maxtheta[iter->first])maxtheta[iter->first]=abs(dThetax[muonNum]);
+if(abs(dThetay[muonNum])>maxtheta[iter->first])maxtheta[iter->first]=abs(dThetay[muonNum]);
+if(abs(dx[muonNum])<mindist[iter->first])mindist[iter->first]=abs(dx[muonNum]);
+if(abs(dy[muonNum])<mindist[iter->first])mindist[iter->first]=abs(dy[muonNum]); 
+if(abs(dx[muonNum])>maxdist[iter->first])maxdist[iter->first]=abs(dx[muonNum]);
+if(abs(dy[muonNum])>maxdist[iter->first])maxdist[iter->first]=abs(dy[muonNum]); 
+avedist[iter->first]+=((dx[muonNum]+dy[muonNum])/2);
+avetheta[iter->first]+=((dThetax[muonNum]+dThetay[muonNum])/2);
+rmsdist[iter->first]+=(((dx[muonNum]*dx[muonNum])+(dy[muonNum]*dy[muonNum]))/2);
+rmstheta[iter->first]+=(((dThetax[muonNum]*dThetax[muonNum])+(dThetay[muonNum]*dThetay[muonNum]))/2);
+nomuons[iter->first]+=1;
+}
 	 newLambda = Lambda[iter->first];// - Alpha*Gradient[iter->first];
-	 mat_W[0][0] = iter->second;
+	 mat_W[0][0] = A[muonNum][iter->first];
 	 mat_W[0][1] = B[muonNum][iter->first];
 	 mat_W[1][0] = B[muonNum][iter->first];
 	 mat_W[1][1] = C[muonNum][iter->first];
@@ -813,15 +884,22 @@ if(!madeSM){
 	 trace = mat_R[0][0] + mat_R[1][1];
 	  LambdaPcaTreeLooperMLSD::mm_mul (mat_R, mat_D, mat_Tot);
 	 product = (mat_Tot[0][0]*dThetax[muonNum]*dThetax[muonNum]) + (mat_Tot[1][0]*dThetax[muonNum]*dx[muonNum]) + (mat_Tot[0][1]*dThetax[muonNum]*dx[muonNum]) + (mat_Tot[1][1]*dx[muonNum]*dx[muonNum]);
+	 
 	 if(newLambda<LAMBDA_AIR) newLambda=LAMBDA_AIR;
 	 if(isnan(newLambda)) newLambda=LAMBDA_AIR;
-
- S[iter->first] += 0.5*(2*newLambda + (newLambda*newLambda*PreFactorEng[muonNum]*(product-trace)));
+	 
+ Sj[iter->first] += 0.5*(2*newLambda + (newLambda*newLambda*PreFactorEng[muonNum]*(product-trace)));
 
 //now add the Y component
 	 product = (mat_Tot[0][0]*dThetay[muonNum]*dThetay[muonNum]) + (mat_Tot[1][0]*dThetay[muonNum]*dy[muonNum]) + (mat_Tot[0][1]*dThetay[muonNum]*dy[muonNum]) + (mat_Tot[1][1]*dy[muonNum]*dy[muonNum]);
- S[iter->first] += 0.5*(2*newLambda + (newLambda*newLambda*PreFactorEng[muonNum]*(product-trace)));
+
+ Sj[iter->first] += 0.5*(2*newLambda + (newLambda*newLambda*PreFactorEng[muonNum]*(product-trace)));
 	 M[iter->first] +=1.;
+
+if(newLambda>1 || (iter->first >= 400&&iter->first<450&&M[iter->first]>0)) {
+  std::cout << "voxelnum: " << iter->first << "    newLambda: " << newLambda << "    product: " << product << "    trace: " << trace << "    S: " << Sj[iter->first] << " M:   " << M[iter->first] << " mat_D[0][0] = " << mat_D[0][0] << " mat_D[0][1] = " << mat_D[0][1] << "   mat_D[1][0] = " << mat_D[1][0] << "   mat_D[1][1] = " << mat_D[1][1] << "   mat_W[0][0] = " << mat_W[0][0] << "   mat_W[0][1] = " << mat_W[0][1] << "   mat_W[1][0] = " << mat_W[1][0] << "   mat_W[1][1] = " << mat_W[1][1] <<" dThetay[muonNum]: " << dThetay[muonNum] <<   "dy[muonNum]: " << dy[muonNum] << " dThetax[muonNum]: " << dThetax[muonNum] <<   "dx[muonNum]: " << dx[muonNum] << " Prefactor: " << PreFactorEng[muonNum] << endl;
+	   //newLambda=LAMBDA_AIR;
+	 }
 
 #ifdef MAKE_DEBUG_TREE
   W00voxel =  mat_W[0][0];
@@ -829,25 +907,30 @@ if(!madeSM){
    W11voxel =  mat_W[1][1];
    thetaNum = dThetax[muonNum];
    dxNum = dx[muonNum];
-   voxelNum = iter->first ;
+   voxelNum = iter->first;
    lambdaNum = newLambda;
-   sNum = S[iter->first];
+   sNum = Sj[iter->first];
    mNum = M[iter->first];
- costTree->Fill();
+if (iter->first==998062){
+voxel1 = newLambda;
+iterationTree->Fill();
+}
+   costTree->Fill();
 #endif	
 
 	}
 
-  }
+   }
 
   for(int voxId=0;voxId<fVoxelCount;voxId++) {
-	costVoxel = M[voxId]*TMath::Log(Lambda[voxId]) + (S[voxId]*0.5/Lambda[voxId]);
+	costVoxel = M[voxId]*TMath::Log(Lambda[voxId]) + (Sj[voxId]*0.5/Lambda[voxId]);
 	cost+= costVoxel;
 }
 
    loopCount++;
 
 #ifdef MAKE_DEBUG_TREE
+   iterationTree->AutoSave();
    costTree->AutoSave();
 #endif
    return cost;
@@ -867,13 +950,13 @@ void LambdaPcaTreeLooperMLSD::DrawSlices(int topSlice, int bottomSlice, int Nx, 
 //      int z = 50;
       int z = 0;
       char HistName[80];
-      for(int SliceNo = 1; SliceNo < 100; SliceNo++){
+      for(int SliceNo = 1; SliceNo < Nz; SliceNo++){
 	 sprintf(HistName,"Slice_%d",SliceNo);
 	 TH2F *CurrentLSlice = new TH2F(HistName,HistName, Nx, 0.0, (double) Nx, Ny, 0.0, (double) Ny);
 
-	 for(int x = 0; x <= Nx; x++){
-	    for(int y = 0; y <= Ny; y++){
-	       CurrentLSlice->SetBinContent(x,y,Lambda[(z+SliceNo)*Nx*Ny + y*Nx + x]);
+	 for(int x = 1; x <= Nx; x++){
+	    for(int y = 1; y <= Ny; y++){
+	       CurrentLSlice->SetBinContent(x,y,Lambda[(z+(SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
 	    }
 	 }
 
@@ -888,5 +971,65 @@ void LambdaPcaTreeLooperMLSD::DrawSlices(int topSlice, int bottomSlice, int Nx, 
       fpOut->Close();
     
    }
+  
+}
+
+//Draw Muons and Input data
+void LambdaPcaTreeLooperMLSD::DrawMuons(int outputSlice, int Nx, int Ny, int Nz, char* FileNameMuon) {
+      TFile *muOut = new TFile(FileNameMuon,"RECREATE");
+      muOut->Write();
+
+      TCanvas *canProj = new TCanvas();
+      canProj->Divide(3,3);
+      char* data[9];
+      data[0] = "average_theta";
+	data[1] = "min_theta";
+	data[2] = "max_theta";
+      data[3] = "average_displacement";
+	data[4] = "min_displacement";
+	data[5] = "max_displacement";
+	data[6] = "number_of_muons";
+	data[7] = "rms_theta";
+	data[8] = "rms_displacement";
+
+      char HistName[80];
+      int SliceNo = outputSlice;
+for (int d=0;d<9;d++){
+	 sprintf(HistName,"%s_%d",data[d],SliceNo);
+	 TH2F *CurrentMSlice = new TH2F(HistName,HistName, Nx, 0.0, (double) Nx, Ny, 0.0, (double) Ny);
+	 for(int x = 0; x <= Nx; x++){
+	    for(int y = 0; y <= Ny; y++){
+	       if(d==0) {
+avetheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]/=nomuons[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x];
+CurrentMSlice->SetBinContent(x,y,avetheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+}
+		if(d==1) CurrentMSlice->SetBinContent(x,y,mintheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+		if(d==2) CurrentMSlice->SetBinContent(x,y,maxtheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+ 	       if(d==3) {
+avedist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]/=nomuons[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x];
+CurrentMSlice->SetBinContent(x,y,avedist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+}
+		if(d==4) CurrentMSlice->SetBinContent(x,y,mindist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+		if(d==5) CurrentMSlice->SetBinContent(x,y,maxdist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+ 	       if(d==6) CurrentMSlice->SetBinContent(x,y,nomuons[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+if(d==7) {
+rmstheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]/=nomuons[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x];
+CurrentMSlice->SetBinContent(x,y,rmstheta[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+}
+if(d==8) {
+rmsdist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]/=nomuons[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x];
+CurrentMSlice->SetBinContent(x,y,rmsdist[((SliceNo-1))*Nx*Ny + (y-1)*Nx + x]);
+}
+	    }
+	 }
+	 canProj->cd(d);
+	 CurrentMSlice->Draw("colz");
+	 CurrentMSlice->SetStats(0);
+	 CurrentMSlice->GetXaxis()->SetTitle("X ID");
+	 CurrentMSlice->GetYaxis()->SetTitle("Y ID");
+	 CurrentMSlice->Write();
+ 
+      }
+      muOut->Close();
   
 }

@@ -37,26 +37,26 @@ void AbsorbedLooper::MakeSliceHists(int numBins)
 //by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
-   const int dz=500; //mm
-   const int numSlices=2*(8000/dz)+1;
+   const int dz=10; //mm
+   const int numSlices=2*(500/dz)+1;
    TH2F *histAbsorbed[numSlices]={0};
    Int_t zSlice[numSlices]={0};
    char histName[180];
    char histTitle[180];
    for(int i=0;i<numSlices;i++) {
-     int z=-8000+i*dz;
+     int z=-500+i*dz;
      zSlice[i]=z;
      sprintf(histName,"histSlice_%d",z);			
      sprintf(histTitle,"Slice at Z=%d mm",z);
-     histAbsorbed[i]=new TH2F(histName,histTitle,numBins,-6000,6000,
-			      numBins,-6000,6000);
+     histAbsorbed[i]=new TH2F(histName,histTitle,numBins,-500,500,
+			      numBins,-500,500);
      histAbsorbed[i]->SetXTitle("x-position (mm)");
      histAbsorbed[i]->SetYTitle("y-position (mm)");
    }
    
 
    
-   
+   TH1D *histxcut =  new TH1D("histxcut","histxcut",2000,-1000,1000);
    
    Long64_t nentries = fChain->GetEntries();
 
@@ -69,6 +69,7 @@ void AbsorbedLooper::MakeSliceHists(int numBins)
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       if (Cut(ientry) < 0) continue;
       countEntries++;
+      histxcut->Fill(xCut);
 
       for(int slice=0;slice<numSlices;slice++) {
 	Double_t xPos=xGrad*zSlice[slice]+xCut;
@@ -81,20 +82,23 @@ void AbsorbedLooper::MakeSliceHists(int numBins)
    
   TCanvas *canNeg = new TCanvas("canNeg","canNeg");
   canNeg->Divide(4,4);
-  for(int slice=0;slice<16;slice++) {    
+  for(int slice=0;slice<50;slice++) {    
     canNeg->cd(slice+1);
     histAbsorbed[slice]->Draw("colz");
   }
 
   TCanvas *canPos = new TCanvas("canPos","canPos");
   canPos->Divide(4,4);
-  for(int slice=16;slice<32;slice++) {    
-    canPos->cd(slice-15);
+  for(int slice=50;slice<100;slice++) {    
+    canPos->cd(slice-49);
     histAbsorbed[slice]->Draw("colz");
   }
   
   TCanvas *canTarget = new TCanvas("canTarget","canTarget");
-  histAbsorbed[16]->Draw("colz");
+  histAbsorbed[50]->Draw("colz");
+
+  TCanvas *xcutcanvas = new TCanvas();
+  histxcut->Draw();
   
 }
 
@@ -128,10 +132,10 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
    if (fChain == 0) return;
 
    int dz=binWidth;
-   const int numSlices=2*(6000/dz)+1;
+   const int numSlices=2*(500/dz)+1;
    std::cout << "Using " << numSlices << " slices\n";
    char outName[FILENAME_MAX];
-   sprintf(outName,"/unix/anita1/creamtea/rjn/absorbedOut_%d.root",binWidth);
+   sprintf(outName,"/unix/creamtea/sfayer/absorbed/absorbedOut_%d.root",binWidth);
    TFile *fp = new TFile (outName,"RECREATE");
    TH2F *histRawAbsorbed[numSlices];
    TH2F *histWeightedAbsorbed[numSlices];
@@ -142,26 +146,26 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
    Int_t numBins=numSlices;
    char histName[180];
    char histTitle[180];
-   Double_t maxXY=6000+binWidth/2;
+   Double_t maxXY=500+binWidth/2;
    for(int i=0;i<numSlices;i++) {
-     int z=-6000+i*dz;
+     int z=-500+i*dz;
      zSlice[i]=z;
      dzSlice[i]=z;
-     sprintf(histName,"histRawSlice_%d",z);			
-     sprintf(histTitle,"Raw Absorptions, Slice at Z=%d mm",z);     
+     sprintf(histName,"histRawSlice_%d",(z+500));			
+     sprintf(histTitle,"Raw Absorptions, Slice at Z=%d mm",(z+500));     
      histRawAbsorbed[i]=new TH2F(histName,histTitle,numBins,-maxXY,maxXY,
 				 numBins,-maxXY,maxXY);
      histRawAbsorbed[i]->SetXTitle("x-position (mm)");
      histRawAbsorbed[i]->SetYTitle("y-position (mm)");
-     sprintf(histName,"histWeightedSlice_%d",z);		
-     sprintf(histTitle,"Weighted Absorptions, Slice at Z=%d mm",z);     	
+     sprintf(histName,"histWeightedSlice_%d",(z+500));		
+     sprintf(histTitle,"Weighted Absorptions, Slice at Z=%d mm",(z+500));     	
      histWeightedAbsorbed[i]=new TH2F(histName,histTitle,numBins,
 					  -maxXY,maxXY,
 					  numBins,-maxXY,maxXY);
      histWeightedAbsorbed[i]->SetXTitle("x-position (mm)");
      histWeightedAbsorbed[i]->SetYTitle("y-position (mm)");
-     sprintf(histName,"histGaussianWeightedSlice_%d",z);		
-     sprintf(histTitle,"Gaussian Weighted Absorptions, Slice at Z=%d mm",z);     	
+     sprintf(histName,"histGaussianWeightedSlice_%d",(z+500));		
+     sprintf(histTitle,"Gaussian Weighted Absorptions, Slice at Z=%d mm",(z+500));     	
      histGaussianWeightedAbsorbed[i]=new TH2F(histName,histTitle,numBins,
 					  -maxXY,maxXY,
 					  numBins,-maxXY,maxXY);
@@ -210,7 +214,7 @@ void AbsorbedLooper::MakeSliceHistsIteratively(int binWidth)
    char graphName[180];
    //Now loop over the valid entries
    Int_t muonCount=0;
-   TF1 *fitty = new TF1("fitty","gaus",-6000,6000);
+   TF1 *fitty = new TF1("fitty","gaus",-500,500);
 
    for(validIt=validStopperEntryList.begin(); 
        validIt != validStopperEntryList.end() ; 
@@ -426,9 +430,9 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
    if (fChain == 0) return;
 
    int dz=binWidth;
-   const int numSlices=2*(6000/dz)+1;
+   const int numSlices=2*(500/dz)+1;
    std::cout << "Using " << numSlices << " slices\n";
-   TFile *fp = new TFile ("/unix/anita1/creamtea/rjn/absorbedRecoOut.root","RECREATE");
+   TFile *fp = new TFile ("/unix/creamtea/sfayer/absorbed/absorbedRecoOut.root","RECREATE");
    TH2F *histRawAbsorbed[numSlices];
    TH2F *histWeightedAbsorbed[numSlices];
    TH2F *histGaussianWeightedAbsorbed[numSlices];
@@ -437,9 +441,9 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
    Int_t numBins=numSlices;
    char histName[180];
    char histTitle[180];
-   Double_t maxXY=6000+binWidth/2;
+   Double_t maxXY=500+binWidth/2;
    for(int i=0;i<numSlices;i++) {
-     int z=-6000+i*dz;
+     int z=-500+i*dz;
      zSlice[i]=z;
      dzSlice[i]=z;
      sprintf(histName,"histRecoRawSlice_%d",z);			
@@ -495,7 +499,7 @@ void AbsorbedLooper::MakeSliceHistsIterativelyReco(int binWidth)
    char graphName[180];
    //Now loop over the valid entries
    Int_t muonCount=0;
-   TF1 *fitty = new TF1("fitty","gaus",-6000,6000);
+   TF1 *fitty = new TF1("fitty","gaus",-500,500);
 
    for(validIt=validStopperEntryList.begin(); 
        validIt != validStopperEntryList.end() ; 

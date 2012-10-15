@@ -100,9 +100,9 @@ WillTreeLooper::WillTreeLooper(TTree *tree)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/unix/creamtea/sfayer/1mdetector_5cmtarget/pca/pca_small1mdetector_5cmtarget_million_1.root");
       if (!f) {
-         f = new TFile("/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetandwaterboxat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtargetandwaterbox_hollowsteelbox_million_1.root");
+         f = new TFile("/unix/creamtea/sfayer/1mdetector_5cmtarget/pca/pca_small1mdetector_5cmtarget_million_1.root");
       }
       tree = (TTree*)gDirectory->Get("pcaTree");
 

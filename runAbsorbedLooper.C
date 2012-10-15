@@ -1,5 +1,4 @@
 
-
 void runAbsorbedLooper() 
 {
   gSystem->CompileMacro("AbsorbedLooper.C","k");
@@ -23,7 +22,7 @@ for(int tag=1;tag<=1;tag++) {
   //  sprintf(inputName,"http://www.hep.ucl.ac.uk/~rjn/creamtea/pcaFiles/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_%d.root",tag);
   //  sprintf(inputName,"/home/rjn/creamtea/data/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_steelboxat_m0p5_3_m0p5/pca_fakecontainer_10cmtarget_steelbox_million_%d.root",tag);
   //  sprintf(inputName,"/unix/anita1/creamtea/strips_650/fakecontainer_10cmtargetat_0p5_1_0p5_hollowsteelboxat_m0p5_3_m0p5/pca/pca_fakecontainer_10cmtarget_hollowsteelbox_million_%d.root",tag);
-   sprintf(inputName,"/unix/anita1/creamtea/minerva/fakecontainer_10cmtarget/pca/pca_fakecontainer_10cmtarget_million_%d.root",tag);
+   sprintf(inputName,"/unix/creamtea/sfayer/1mdetector_10cmtarget/pca/pca_small1mdetector_10cmtarget_million_%d.root",tag);
    //   sprintf(inputName,"/unix/anita1/creamtea/minerva/fakecontainer_5cmtarget/pca/pca_fakecontainer_5cmtarget_million_%d.root",tag);
    //  sprintf(inputName,"/unix/anita1/creamtea/minerva/fakecontainer_notarget/pca/pca_fakecontainer_notarget_million_%d.root",tag);
     Absorbed->Add(inputName);
@@ -32,7 +31,7 @@ for(int tag=1;tag<=1;tag++) {
  AbsorbedLooper theLooper(Absorbed);
  // theLooper.MakeSliceHists(480);
  // theLooper.MakeSliceHistsIteratively(100);
- theLooper.MakeSliceHistsIterativelyReco(100);
+ theLooper.MakeSliceHistsIteratively(10);
  
   
 
